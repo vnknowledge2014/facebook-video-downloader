@@ -1,0 +1,14 @@
+{
+  "name": "fb_downloader_tools_v1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dl_fb_video.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "mike",
+  "license": "MIT",
+  "bin": {
+    "fb-dl": "dl_fb_video.js"
+  }
+}
