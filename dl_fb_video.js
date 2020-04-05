@@ -8,18 +8,41 @@ const exec = require('child_process').execSync;
 const [fileName, videoLink, audioLink] = process.argv.slice(2);
 const fbDataSource = [videoLink, audioLink];
 
-const dl = (path, file) => {
-    let f = fs.createWriteStream(file);
+function dl(url, dest) {
+    return new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(dest, { flags: "wx" });
 
-    http.get(path, function (res) {
-        res.on('data', function (chunk) {
-            f.write(chunk);
+        const request = http.get(url, response => {
+            if (response.statusCode === 200) {
+                response.pipe(file);
+            } else {
+                file.close();
+                fs.unlink(dest, () => { }); // Delete temp file
+                reject(`Server responded with ${response.statusCode}: ${response.statusMessage}`);
+            }
         });
-        res.on('end', function () {
-            f.end();
+
+        request.on("error", err => {
+            file.close();
+            fs.unlink(dest, () => { }); // Delete temp file
+            reject(err.message);
+        });
+
+        file.on("finish", () => {
+            resolve();
+        });
+
+        file.on("error", err => {
+            file.close();
+
+            if (err.code === "EEXIST") {
+                reject("File already exists");
+            } else {
+                fs.unlink(dest, () => { }); // Delete temp file
+                reject(err.message);
+            }
         });
     });
-
 }
 
 const checkExist = () => {
